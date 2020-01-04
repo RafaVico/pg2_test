@@ -17,7 +17,6 @@
 #include <sys/statvfs.h>
 #include <math.h>
 #include <pthread.h>
-#include <shake.h>  // rumble lib
 #include <SDL/SDL.h>
 #include <SDL/SDL_image.h>
 #include <SDL/SDL_ttf.h>
@@ -37,10 +36,11 @@
 #define GCW_BUTTON_Y            SDLK_LSHIFT
 #define GCW_BUTTON_L1           SDLK_TAB
 #define GCW_BUTTON_R1           SDLK_BACKSPACE
-#define GCW_BUTTON_L2           SDLK_PAGEUP
-#define GCW_BUTTON_R2           SDLK_PAGEDOWN
+#define GCW_BUTTON_L2           SDLK_RSHIFT
+#define GCW_BUTTON_R2           SDLK_RALT
 #define GCW_BUTTON_SELECT       SDLK_ESCAPE
 #define GCW_BUTTON_START        SDLK_RETURN
+#define GCW_BUTTON_MENU         SDLK_RCTRL
 #define GCW_BUTTON_L3           SDLK_KP_DIVIDE
 #define GCW_BUTTON_R3           SDLK_KP_PERIOD
 #define GCW_BUTTON_POWER        SDLK_HOME
@@ -50,7 +50,6 @@
 
 #define TRUE   1
 #define FALSE  0
-#define PI 3.1415926
 
 ///////////////////////////////////
 /*  Structs                      */
@@ -147,18 +146,17 @@ pthread_t sd_th;
 
 // strings
 int view_author=FALSE;
-const char* author="(c) Rafa Vico 2019";
+const char* author="PocketGo2 test for Rogue Firmware";
 const char* version="1.3d";
-const char* msg[6]={
+const char* msg[5]={
 "Press L1 + START to exit.",
 "Press L1 + X to play a sound.",
 "Last detected key:",
-"Press L2 + R2 to rumble.",
-"Press POWER + L1 to de/activate mouse.",
+"Press POWER + R1 to de/activate mouse.",
 "reading..."
 };
 
-const char* key_table[18]={
+const char* key_table[21]={
 "SDLK_UP",
 "SDLK_DOWN",
 "SDLK_LEFT",
@@ -176,10 +174,13 @@ const char* key_table[18]={
 "SDLK_KP_DIVIDE",
 "SDLK_KP_PERIOD",
 "SDLK_HOME",
+"SDLK_RCTRL",
+"SDLK_RSHIFT",
+"SDLK_RALT",
 "Not defined"
 };
 
-int key_val[18]={
+int key_val[21]={
 SDLK_UP,
 SDLK_DOWN,
 SDLK_LEFT,
@@ -197,6 +198,9 @@ SDLK_RETURN,
 SDLK_KP_DIVIDE,
 SDLK_KP_PERIOD,
 SDLK_HOME,
+SDLK_RCTRL,
+SDLK_RSHIFT,
+SDLK_RALT,
 0
 };
 
@@ -289,10 +293,6 @@ button_state btnr2;
 button_state btnpw;
 button_state btnvu;
 button_state btnvd;
-
-Shake_Device *device;
-Shake_Effect effect;
-int shake_id;
 
 ///////////////////////////////////
 /*  Function declarations        */
@@ -529,12 +529,12 @@ unsigned short get_batterylevel()
 const char* get_keydata(int value)
 {
   int f=0;
-  for(f=0;f<18;f++)
+  for(f=0;f<21;f++)
   {
     if(value==key_val[f])
       return key_table[f];
   }
-  return key_table[17]; // message "Not defined"}
+  return key_table[20]; // message "Not defined"}
 
 ///////////////////////////////////
 /*  Clear values from joystick   */
@@ -583,51 +583,6 @@ void clear_mouse_state()
   mainmouse.y=0;
   mainmouse.button_left=0;
   mainmouse.button_right=0;
-}
-
-///////////////////////////////////
-/*  Init rumble device           */
-///////////////////////////////////
-void init_rumble()
-{
-	Shake_Init();
-
-	if (Shake_NumOfDevices() > 0)
-	{
-		device = Shake_Open(0);
-
-		Shake_InitEffect(&effect, SHAKE_EFFECT_PERIODIC);
-		effect.periodic.waveform		= SHAKE_PERIODIC_SINE;
-		effect.periodic.period			= 0.1*0x100;
-		effect.periodic.magnitude		= 0x6000;
-		effect.periodic.envelope.attackLength	= 0x100;
-		effect.periodic.envelope.attackLevel	= 0;
-		effect.periodic.envelope.fadeLength	= 0x100;
-		effect.periodic.envelope.fadeLevel	= 0;
-		effect.direction			= 0x4000;
-		effect.length				= 2000;
-		effect.delay				= 0;
-
-		shake_id=Shake_UploadEffect(device, &effect);
-    }
-}
-
-///////////////////////////////////
-/*  Close rumble device          */
-///////////////////////////////////
-void end_rumble()
-{
-    Shake_EraseEffect(device, shake_id);
-    Shake_Close(device);
-	Shake_Quit();
-}
-
-///////////////////////////////////
-/*  Rumble                       */
-///////////////////////////////////
-void play_rumble()
-{
-    Shake_Play(device, shake_id);
 }
 
 ///////////////////////////////////
@@ -852,7 +807,6 @@ void init_game()
   sound_tone=Mix_LoadWAV("media/tone.wav");
 
   // battery and rumble init
-  init_rumble();
   battery_level=get_batterylevel();
 }
 
@@ -952,8 +906,6 @@ void end_game()
   Mix_HaltChannel(-1);
   Mix_FreeChunk(sound_tone);
   Mix_CloseAudio();
-
-  end_rumble();
 }
 
 ///////////////////////////////////
@@ -1726,7 +1678,6 @@ void draw_game()
   draw_text(screen, (char*)msg[0],10,180,255,255,0);
   draw_text(screen, (char*)msg[1],10,190,255,255,0);
   draw_text(screen, (char*)msg[3],10,200,255,255,0);
-  draw_text(screen, (char*)msg[4],10,210,255,255,0);
   if(view_author)
     draw_text(screen, (char*)author,10,230,255,0,255);
   draw_text(screen, (char*)version,300,230,69,69,69);
@@ -1747,7 +1698,7 @@ void draw_game()
     case 1:
       if(sdcard_0)
         SDL_BlitSurface(sdcard_0,NULL,screen,&dest);
-      draw_text(screen,(char*)msg[5],120-text_width((char*)msg[5]),20,255,255,255);
+      draw_text(screen,(char*)msg[4],120-text_width((char*)msg[4]),20,255,255,255);
       break;
     case 2:
       if(sdcard_1)
@@ -1769,7 +1720,7 @@ void draw_game()
     case 1:
       if(sdcard_0)
         SDL_BlitSurface(sdcard_0,NULL,screen,&dest);
-      draw_text(screen,(char*)msg[5],197,20,255,255,255);
+      draw_text(screen,(char*)msg[4],197,20,255,255,255);
       break;
     case 2:
       if(sdcard_2)
@@ -1829,14 +1780,6 @@ void update_game()
     // show author
     if(mainjoystick.button_select && mainjoystick.button_start)
         view_author=TRUE;
-    // rumble
-    if(mainjoystick.button_l2 && mainjoystick.button_r2 && !active_rumble)
-    {
-        active_rumble=1;
-        play_rumble();
-    }
-    if(!mainjoystick.button_l2 || !mainjoystick.button_r2)
-      active_rumble=0;
     // take screenshot
     /*if(mainjoystick.button_l3)
         SDL_SaveBMP(screen,"/usr/local/home/rgtest.bmp");*/

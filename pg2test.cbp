@@ -27,7 +27,7 @@
 				</Compiler>
 				<Linker>
 					<Add option="-s" />
-					<Add option="-lSDL_mixer -lSDL_ttf -lSDL_image -lfreetype -lvorbisidec -lz -lSDL -lpthread -lshake" />
+					<Add option="-lSDL_mixer -lSDL_ttf -lSDL_image -lfreetype -lvorbisidec -lz -lSDL -lpthread" />
 				</Linker>
 			</Target>
 		</Build>

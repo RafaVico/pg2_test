@@ -1,15 +1,13 @@
-ifeq ($(PLATFORM), gcw0)
-  CC         := /opt/gcw0-toolchain/usr/bin/mipsel-linux-g++
-  STRIP      := /opt/gcw0-toolchain/usr/bin/mipsel-linux-strip
-  LIBS       := -L../libShake-0.2.0/release/gcwzero -L/opt/gcw0-toolchain/usr/mipsel-gcw0-linux-uclibc/sysroot/usr/lib
-  INCS	     := -I/opt/gcw0-toolchain/usr/mipsel-gcw0-linux-uclibc/sysroot/usr/include -I../libShake-0.2.0/include
-endif
+CC         := /opt/gcw0-toolchain/usr/bin/mipsel-linux-g++
+STRIP      := /opt/gcw0-toolchain/usr/bin/mipsel-linux-strip
+LIBS       := -L../libShake-0.2.0/release/gcwzero -L/opt/gcw0-toolchain/usr/mipsel-gcw0-linux-uclibc/sysroot/usr/lib
+INCS	     := -I/opt/gcw0-toolchain/usr/mipsel-gcw0-linux-uclibc/sysroot/usr/include
 
 CC           ?= g++
 STRIP        ?= strip
 TARGET       ?= pg2test.gcw
 SYSROOT      := $(shell $(CC) --print-sysroot)
-CFLAGS       := $(LIBS) -lSDL_mixer -lSDL_ttf -lSDL_image -lfreetype -lz -lSDL -lpthread -lshake
+CFLAGS       := $(LIBS) -lSDL_mixer -lSDL_ttf -lSDL_image -lfreetype -lz -lSDL -lpthread
 SRCDIR       := src
 OBJDIR       := obj
 SRC          := $(wildcard $(SRCDIR)/*.cpp)
