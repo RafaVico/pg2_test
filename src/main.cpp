@@ -1810,6 +1810,8 @@ void update_game()
         btnsel.pressed_time=SDL_GetTicks();
     if(mainjoystick.button_start)
         btnst.pressed_time=SDL_GetTicks();
+    if(mainjoystick.button_menu)
+        btnmenu.pressed_time=SDL_GetTicks();
     if(mainjoystick.button_power)
         btnpw.pressed_time=SDL_GetTicks();
     if(mainjoystick.button_volup)
