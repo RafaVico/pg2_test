@@ -566,6 +566,7 @@ void clear_joystick_state()
   mainjoystick.button_r2=0;
   mainjoystick.button_select=0;
   mainjoystick.button_start=0;
+  mainjoystick.button_menu=0;
   mainjoystick.button_power=0;
   mainjoystick.button_voldown=0;
   mainjoystick.button_volup=0;
@@ -754,8 +755,8 @@ void init_game()
   btnst.y=rg_y+64;
   btnst.moved_time=-3000;
   btnst.pressed_time=-3000;
-  btnmenu.button=pg2_start;
-  btnmenu.button_pressed=pg2_start_press;
+  btnmenu.button=pg2_menu;
+  btnmenu.button_pressed=pg2_menu_press;
   btnmenu.x=rg_x+110;
   btnmenu.y=rg_y+46;
   btnmenu.moved_time=-3000;
