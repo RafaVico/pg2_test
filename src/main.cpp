@@ -1031,6 +1031,9 @@ void process_events()
           case GCW_BUTTON_START:
             mainjoystick.button_start=1;
             break;
+          case GCW_BUTTON_MENU:
+            mainjoystick.button_menu=1;
+            break;
           // Volume Up and Volume Down can't be detected individual
           case GCW_BUTTON_VOLUP:
             mainjoystick.button_volup=1;
@@ -1213,6 +1216,8 @@ void process_joystick()
     mainjoystick.button_start=1;
   if(keys[GCW_BUTTON_SELECT])
     mainjoystick.button_select=1;
+  if(keys[GCW_BUTTON_MENU])
+    mainjoystick.button_menu=1;
 
   if(keys[GCW_BUTTON_L1])
     mainjoystick.button_l1=1;
