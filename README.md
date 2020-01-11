@@ -8,3 +8,6 @@ http://github.com/rafavico
 # License
 GPL v.2
 
+# Screenshots
+
+<img src="screenshots/screenshot001.png" alt="image">
