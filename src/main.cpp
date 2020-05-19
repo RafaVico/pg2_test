@@ -39,8 +39,13 @@
 #define GCW_BUTTON_Y            SDLK_LSHIFT
 #define GCW_BUTTON_L1           SDLK_TAB
 #define GCW_BUTTON_R1           SDLK_BACKSPACE
+#ifdef PG2
 #define GCW_BUTTON_L2           SDLK_RSHIFT
 #define GCW_BUTTON_R2           SDLK_RALT
+#elif PG2V2
+#define GCW_BUTTON_L2           SDLK_PAGEUP
+#define GCW_BUTTON_R2           SDLK_PAGEDOWN
+#endif
 #define GCW_BUTTON_SELECT       SDLK_ESCAPE
 #define GCW_BUTTON_START        SDLK_RETURN
 #define GCW_BUTTON_MENU         SDLK_RCTRL
@@ -543,7 +548,8 @@ const char* get_keydata(int value)
     if(value==key_val[f])
       return key_table[f];
   }
-  return key_table[20]; // message "Not defined"}
+  return key_table[20]; // message "Not defined"
+}
 
 ///////////////////////////////////
 /*  Clear values from joystick   */
@@ -1727,7 +1733,8 @@ void draw_game()
   dest.x=dest.x+1;
   dest.w=14;
   if(battery_level<=100)
-    dest.h=battery_level*39/100;  else
+    dest.h=battery_level*39/100;
+  else
     dest.h=39;
   dest.y=dest.y+43-dest.h; // capacity rectangle is 38 pixels high
 
