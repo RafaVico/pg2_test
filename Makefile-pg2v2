@@ -7,7 +7,7 @@ CC           ?= g++
 STRIP        ?= strip
 TARGET       ?= pg2test.gcw
 SYSROOT      := $(shell $(CC) --print-sysroot)
-CFLAGS       := $(LIBS) -lSDL_mixer -lSDL_ttf -lSDL_image -lfreetype -lz -lSDL -lpthread
+CFLAGS       := $(LIBS) -lSDL_mixer -lSDL_ttf -lSDL_image -lfreetype -lz -lSDL -lpthread -lshake
 SRCDIR       := src
 OBJDIR       := obj
 SRC          := $(wildcard $(SRCDIR)/*.cpp)
@@ -31,7 +31,7 @@ ifdef DO_STRIP
 endif
 
 $(OBJ): $(OBJDIR)/%.o: $(SRCDIR)/%.cpp | $(OBJDIR)
-	$(CC) -c $< -o $@ $(INCS) -DPLATFORM_LINUX
+	$(CC) -c $< -o $@ $(INCS) -DPLATFORM_LINUX -DPG2V2
 
 $(OBJDIR):
 	mkdir -p $@

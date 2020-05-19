@@ -21,6 +21,9 @@
 #include <SDL/SDL_image.h>
 #include <SDL/SDL_ttf.h>
 #include <SDL/SDL_mixer.h>
+#ifdef PG2V2
+#include <shake.h>
+#endif // PG2V2
 
 ///////////////////////////////////
 /*  Joystick codes               */
@@ -143,17 +146,23 @@ int mouse_active=0;
 sd_data sd_1;
 sd_data sd_2;
 pthread_t sd_th;
+#ifdef PG2V2
+Shake_Device *device;
+Shake_Effect effect;
+int shake_id;
+#endif // PG2V2
 
 // strings
 int view_author=FALSE;
 const char* author="PocketGo2 test for Rogue Firmware";
 const char* version="1.3d";
-const char* msg[5]={
+const char* msg[6]={
 "Press L1 + START to exit.",
 "Press L1 + X to play a sound.",
 "Last detected key:",
 "Press POWER + R1 to de/activate mouse.",
-"reading..."
+"reading...",
+"Press L2 + R2 to rumble."
 };
 
 const char* key_table[21]={
@@ -587,6 +596,53 @@ void clear_mouse_state()
 }
 
 ///////////////////////////////////
+/*  Init rumble device           */
+///////////////////////////////////
+#ifdef PG2V2
+void init_rumble()
+{
+	Shake_Init();
+
+	if (Shake_NumOfDevices() > 0)
+	{
+		device = Shake_Open(0);
+
+		Shake_InitEffect(&effect, SHAKE_EFFECT_PERIODIC);
+		effect.u.periodic.waveform		= SHAKE_PERIODIC_SINE;
+		effect.u.periodic.period			= 0.1*0x100;
+		effect.u.periodic.magnitude		= 0x6000;
+		effect.u.periodic.envelope.attackLength	= 0x100;
+		effect.u.periodic.envelope.attackLevel	= 0;
+		effect.u.periodic.envelope.fadeLength	= 0x100;
+		effect.u.periodic.envelope.fadeLevel	= 0;
+		effect.direction			= 0x4000;
+		effect.length				= 2000;
+		effect.delay				= 0;
+
+		shake_id=Shake_UploadEffect(device, &effect);
+    }
+}
+
+///////////////////////////////////
+/*  Close rumble device          */
+///////////////////////////////////
+void end_rumble()
+{
+    Shake_EraseEffect(device, shake_id);
+    Shake_Close(device);
+	Shake_Quit();
+}
+
+///////////////////////////////////
+/*  Rumble                       */
+///////////////////////////////////
+void play_rumble()
+{
+    Shake_Play(device, shake_id);
+}
+#endif // PG2V2
+
+///////////////////////////////////
 /*  Load graphic with alpha      */
 ///////////////////////////////////
 void load_imgalpha(const char* file, SDL_Surface *&dstsurface)
@@ -808,6 +864,9 @@ void init_game()
   sound_tone=Mix_LoadWAV("media/tone.wav");
 
   // battery and rumble init
+#ifdef PG2V2
+  init_rumble();
+#endif // PG2V2
   battery_level=get_batterylevel();
 }
 
@@ -907,6 +966,10 @@ void end_game()
   Mix_HaltChannel(-1);
   Mix_FreeChunk(sound_tone);
   Mix_CloseAudio();
+
+#ifdef PG2V2
+  end_rumble();
+#endif // PG2V2
 }
 
 ///////////////////////////////////
@@ -1684,6 +1747,9 @@ void draw_game()
   draw_text(screen, (char*)msg[0],10,180,255,255,0);
   draw_text(screen, (char*)msg[1],10,190,255,255,0);
   draw_text(screen, (char*)msg[3],10,200,255,255,0);
+#ifdef PG2V2    // rumble
+  draw_text(screen, (char*)msg[5],10,210,255,255,0);
+#endif // PG2V2
   if(view_author)
     draw_text(screen, (char*)author,10,230,255,0,255);
   draw_text(screen, (char*)version,300,230,69,69,69);
@@ -1786,6 +1852,16 @@ void update_game()
     // show author
     if(mainjoystick.button_select && mainjoystick.button_start)
         view_author=TRUE;
+#ifdef PG2V2
+    // rumble
+    if(mainjoystick.button_l2 && mainjoystick.button_r2 && !active_rumble)
+    {
+        active_rumble=1;
+        play_rumble();
+    }
+    if(!mainjoystick.button_l2 || !mainjoystick.button_r2)
+      active_rumble=0;
+#endif // PG2V2
     // take screenshot
     /*if(mainjoystick.button_l3)
         SDL_SaveBMP(screen,"/usr/local/home/rgtest.bmp");*/
