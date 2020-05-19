@@ -31,7 +31,7 @@ ifdef DO_STRIP
 endif
 
 $(OBJ): $(OBJDIR)/%.o: $(SRCDIR)/%.cpp | $(OBJDIR)
-	$(CC) -c $< -o $@ $(INCS) -DPLATFORM_LINUX
+	$(CC) -c $< -o $@ $(INCS) -DPLATFORM_LINUX -DPG2
 
 $(OBJDIR):
 	mkdir -p $@
