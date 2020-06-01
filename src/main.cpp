@@ -143,6 +143,9 @@ int last_pressedkey=0;
 int battery_level=0;
 int battery_charging=0;
 Uint32 battery_checktime=0;
+int lastChecking=SDL_GetTicks();
+int batt_average[10]={0,0,0,0,0,0,0,0,0,0};   // Array con los últimos 10 valores leídos de la batería
+int battavg_idx=0;                            // Índice al valor que toca actualizar en la próxima lectura
 int mouse_active=0;
 //int sd1_readed=0;       // 0=no exist, 1=reading, 2=readed
 //int sd2_readed=0;
@@ -160,7 +163,7 @@ int shake_id;
 // strings
 int view_author=FALSE;
 const char* author="PocketGo2 test for Rogue Firmware";
-const char* version="1.3d";
+const char* version="1.4";
 const char* msg[6]={
 "Press L1 + START to exit.",
 "Press L1 + X to play a sound.",
@@ -520,21 +523,57 @@ unsigned short is_batterycharging()
 ///////////////////////////////////
 unsigned short get_batterylevel()
 {
-	FILE *batterydev=NULL;
-	batterydev = fopen("/sys/class/power_supply/battery/capacity", "r");
-	if(batterydev)
-	{
-		int battval = 0;
-		fscanf(batterydev,"%d",&battval);
-		fclose(batterydev);
+  int battval=0;
 
-		// return battery 0-100, could vary when charging
-		if(battval>100)
-      battval=100;
-		return battval;
-	}
+  if((SDL_GetTicks()-lastChecking)>120000)
+    batt_average[battavg_idx]=0;
 
-	return 0;
+  if(batt_average[battavg_idx]==0 || (SDL_GetTicks()-lastChecking)>5000) {
+    lastChecking=SDL_GetTicks();
+
+    FILE *batteryHandle = NULL;
+    batteryHandle = fopen("/sys/class/power_supply/battery/voltage_now", "r");
+    if (batteryHandle) {
+      /* voltaje maximo de la PG es 4270000 */
+      #define MAX_VOLTAGE 4200000
+      #define MIN_VOLTAGE 3330000
+      /* voltaje maximo de la PG es 4321000 con el cable USB*/
+      #define USB_VOLTAGE 110000
+
+      fscanf(batteryHandle, "%d", &battval);
+      if (is_batterycharging()) {
+        battval=((battval - MIN_VOLTAGE) - USB_VOLTAGE) * 100 / (MAX_VOLTAGE - MIN_VOLTAGE);
+      } else {
+        battval=(battval - MIN_VOLTAGE) * 100 / (MAX_VOLTAGE - MIN_VOLTAGE);
+      }
+      fclose(batteryHandle);
+
+      if(battval>100)
+        battval=100;
+      else if(battval<0)
+        battval=0;
+
+      // si el array está a 0, estamos leyendo por primera vez, actualizamos el array completo
+      if(batt_average[battavg_idx]==0) {
+        for(int f=0; f<10; f++)
+          batt_average[f]=battval;
+        return battval;
+      }
+
+      // actualizamos la casilla del array con el nuevo valor leído
+      batt_average[battavg_idx++]=battval;
+      if(battavg_idx>9)
+        battavg_idx=0;
+    }
+  }
+
+  // calculamos la media de los últimos 10 valores leídos
+  battval=0;
+  for(int f=0; f<10; f++)
+    battval=battval+batt_average[f];
+  battval=battval/10;
+
+  return battval;
 }
 
 ///////////////////////////////////
@@ -1716,7 +1755,7 @@ void draw_game()
   }
 
   // battery icon
-  dest.x=rg_x+180;
+  dest.x=rg_x+190;
   dest.y=rg_y+20;
   if(pg2_battery)
     SDL_BlitSurface(pg2_battery,NULL,screen,&dest);
@@ -1744,7 +1783,7 @@ void draw_game()
       SDL_FillRect(screen, &dest, SDL_MapRGB(screen->format,192,64,64));  // red power
 
   // if connected to usb, draw charging battery icon
-  dest.x=rg_x+180;
+  dest.x=rg_x+190;
   dest.y=rg_y+20;
   if(battery_charging)
     if(pg2_battery2)
