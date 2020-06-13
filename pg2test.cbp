@@ -23,11 +23,11 @@
 				<Option projectResourceIncludeDirsRelation="1" />
 				<Compiler>
 					<Add option="-O2" />
-					<Add option="-DPLATFORM_LINUX" />
+					<Add option="-DPLATFORM_LINUX -DPG2V2" />
 				</Compiler>
 				<Linker>
 					<Add option="-s" />
-					<Add option="-lSDL_mixer -lSDL_ttf -lSDL_image -lfreetype -lvorbisidec -lz -lSDL -lpthread" />
+					<Add option="-lSDL_mixer -lSDL_ttf -lSDL_image -lfreetype -lvorbisidec -lz -lSDL -lpthread -lshake" />
 				</Linker>
 			</Target>
 		</Build>

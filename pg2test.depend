@@ -88,7 +88,7 @@
 	<SDL/SDL_ttf.h>
 	<SDL/SDL_mixer.h>
 
-1578163238 source:/home/rafa/GitHub___/PG2Test/src/main.cpp
+1591036510 source:/home/rafa/GitHub___/PG2Test/src/main.cpp
 	<sys/stat.h>
 	<sys/statvfs.h>
 	<math.h>
@@ -97,4 +97,5 @@
 	<SDL/SDL_image.h>
 	<SDL/SDL_ttf.h>
 	<SDL/SDL_mixer.h>
+	<shake.h>
 
