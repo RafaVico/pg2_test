@@ -5,7 +5,7 @@ INCS	     := -I/opt/gcw0-toolchain/usr/mipsel-gcw0-linux-uclibc/sysroot/usr/incl
 
 CC           ?= g++
 STRIP        ?= strip
-TARGET       ?= pg2test.gcw
+TARGET       ?= pg2v2test.gcw
 SYSROOT      := $(shell $(CC) --print-sysroot)
 CFLAGS       := $(LIBS) -lSDL_mixer -lSDL_ttf -lSDL_image -lfreetype -lz -lSDL -lpthread -lshake
 SRCDIR       := src
